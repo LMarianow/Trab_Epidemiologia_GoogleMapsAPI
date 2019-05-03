@@ -60,7 +60,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // New variables for Current Place Picker
     private static final String TAG = "MapsActivity";
-    ListView lstPlaces;
     private PlacesClient mPlacesClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
@@ -75,13 +74,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
-    // Used for selecting the current place.
-    private static final int M_MAX_ENTRIES = 5;
-    private String[] mLikelyPlaceNames;
-    private String[] mLikelyPlaceAddresses;
-    private String[] mLikelyPlaceAttributions;
-    private LatLng[] mLikelyPlaceLatLngs;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,9 +86,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Set up the action toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        // Set up the views
-        lstPlaces = (ListView) findViewById(R.id.listPlaces);
 
         // Initialize the Places client
         String apiKey = getString(R.string.google_maps_key);
@@ -126,8 +115,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
     }
-
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -142,9 +129,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng brasil = new LatLng(-10.8134108, -47.9394216);
+        mMap.addMarker(new MarkerOptions().position(brasil).title("Marcador em Brasil"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(brasil));
 
         // Enable the zoom controls for the map
         mMap.getUiSettings().setZoomControlsEnabled(true);
@@ -215,13 +202,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     new LatLng(mLastKnownLocation.getLatitude(),
                                             mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                            LatLng Currentloclatlongi = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
+                            mMap.addMarker(new MarkerOptions().position(Currentloclatlongi).title(mLastKnownLocation.getProvider()));
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             mMap.moveCamera(CameraUpdateFactory
                                     .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
                         }
-
-                        getCurrentPlaceLikelihoods();
                     }
                 });
             }
@@ -230,11 +217,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
-    /**
-     * Fetch a list of likely places, and show the current place on the map - provided the user
-     * has granted location permission.
-     */
     private void pickCurrentPlace() {
         if (mMap == null) {
             return;
@@ -256,100 +238,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             getLocationPermission();
         }
     }
-
-    private void getCurrentPlaceLikelihoods() {
-        // Use fields to define the data types to return.
-        List<Place.Field> placeFields = Arrays.asList(Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG);
-
-        // Get the likely places - that is, the businesses and other points of interest that
-        // are the best match for the device's current location.
-        @SuppressWarnings("MissingPermission") final FindCurrentPlaceRequest request =
-                FindCurrentPlaceRequest.builder(placeFields).build();
-        Task<FindCurrentPlaceResponse> placeResponse = mPlacesClient.findCurrentPlace(request);
-        placeResponse.addOnCompleteListener(task -> {
-            if (task.isSuccessful()){
-                FindCurrentPlaceResponse response = task.getResult();
-                // Set the count, handling cases where less than 5 entries are returned.
-                int count;
-                if (response.getPlaceLikelihoods().size() < M_MAX_ENTRIES) {
-                    count = response.getPlaceLikelihoods().size();
-                } else {
-                    count = M_MAX_ENTRIES;
-                }
-
-                int i = 0;
-                mLikelyPlaceNames = new String[count];
-                mLikelyPlaceAddresses = new String[count];
-                mLikelyPlaceAttributions = new String[count];
-                mLikelyPlaceLatLngs = new LatLng[count];
-
-                for (PlaceLikelihood placeLikelihood : response.getPlaceLikelihoods()) {
-                    Place currPlace = placeLikelihood.getPlace();
-                    mLikelyPlaceNames[i] = currPlace.getName();
-                    mLikelyPlaceAddresses[i] = currPlace.getAddress();
-                    mLikelyPlaceAttributions[i] = (currPlace.getAttributions() == null) ?
-                            null : String.join(" ", currPlace.getAttributions());
-                    mLikelyPlaceLatLngs[i] = currPlace.getLatLng();
-
-                    String currLatLng = (mLikelyPlaceLatLngs[i] == null) ?
-                            "" : mLikelyPlaceLatLngs[i].toString();
-
-                    Log.i(TAG, String.format("Place " + currPlace.getName()
-                            + " has likelihood: " + placeLikelihood.getLikelihood()
-                            + " at " + currLatLng));
-
-                    i++;
-                    if (i > (count - 1)) {
-                        break;
-                    }
-                }
-
-                // Populate the ListView
-                fillPlacesList();
-
-            } else {
-                Exception exception = task.getException();
-                if (exception instanceof ApiException) {
-                    ApiException apiException = (ApiException) exception;
-                    Log.e(TAG, "Place not found: " + apiException.getStatusCode());
-                }
-            }
-        });
-    }
-
-    /**
-     * Display a list allowing the user to select a place from a list of likely places.
-     */
-    private void fillPlacesList() {
-        // Set up an ArrayAdapter to convert likely places into TextViews to populate the ListView
-        ArrayAdapter<String> placesAdapter =
-                new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mLikelyPlaceNames);
-        lstPlaces.setAdapter(placesAdapter);
-        lstPlaces.setOnItemClickListener(listClickedHandler);
-    }
-
-    /**
-     * When user taps an item in the Places list, add a marker to the map with the place details
-     */
-    private AdapterView.OnItemClickListener listClickedHandler = new AdapterView.OnItemClickListener() {
-        public void onItemClick(AdapterView parent, View v, int position, long id) {
-            // position will give us the index of which place was selected in the array
-            LatLng markerLatLng = mLikelyPlaceLatLngs[position];
-            String markerSnippet = mLikelyPlaceAddresses[position];
-            if (mLikelyPlaceAttributions[position] != null) {
-                markerSnippet = markerSnippet + "\n" + mLikelyPlaceAttributions[position];
-            }
-
-            // Add a marker for the selected place, with an info window
-            // showing information about that place.
-            mMap.addMarker(new MarkerOptions()
-                    .title(mLikelyPlaceNames[position])
-                    .position(markerLatLng)
-                    .snippet(markerSnippet));
-
-            // Position the map's camera at the location of the marker.
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(markerLatLng));
-        }
-    };
-
 }
