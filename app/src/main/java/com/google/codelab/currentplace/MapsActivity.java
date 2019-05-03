@@ -53,10 +53,15 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 
 import java.util.Arrays;
 import java.util.List;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    public  static TextView data;
 
     // New variables for Current Place Picker
     private static final String TAG = "MapsActivity";
@@ -92,6 +97,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Places.initialize(getApplicationContext(), apiKey);
         mPlacesClient = Places.createClient(this);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        FetchData process = new FetchData();
+        //String teste = "";
+        //process.execute();
     }
 
     @Override
@@ -216,7 +224,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.e("Exception: %s", e.getMessage());
         }
     }
-
     private void pickCurrentPlace() {
         if (mMap == null) {
             return;
