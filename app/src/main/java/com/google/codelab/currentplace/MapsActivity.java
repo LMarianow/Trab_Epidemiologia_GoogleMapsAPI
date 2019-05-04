@@ -259,15 +259,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         protected Void doInBackground(Double... arg0) {
             try {
-                URL url = new URL("https://roads.googleapis.com/v1/nearestRoads?points="+mLastKnownLocation.getLatitude()+","+mLastKnownLocation.getLongitude()+"|"+mLastKnownLocation.getLatitude()+","+mLastKnownLocation.getLongitude()+"|"+mLastKnownLocation.getLatitude()+","+mLastKnownLocation.getLongitude()+"&key=AIzaSyDjm1l8y0pnEPcBlKfetwuWJtNfINdrMxY");
+                URL url = new URL("https://roads.googleapis.com/v1/nearestRoads?points="+mLastKnownLocation.getLatitude()+","+mLastKnownLocation.getLongitude()+"&key=AIzaSyDjm1l8y0pnEPcBlKfetwuWJtNfINdrMxY");
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                 InputStream inputStream = httpURLConnection.getInputStream();
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 String line = "";
-                while (line != null) {
+                for(int i=0;i<=8;i++)
+                {
+                    line = bufferedReader.readLine();
+                    data = line;
+                }
+                int tam =  data.length();
+                data = data.substring(18
+                        ,tam-1);
+                Log.d(TAG, "TESTE: " + data);
+                /*while (line != null) {
                     line = bufferedReader.readLine();
                     data = data + line;
-                }
+                    //if (data.substring(0,10)=="placeId=")
+                    //    break;
+                }*/
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
