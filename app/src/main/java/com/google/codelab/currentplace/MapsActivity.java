@@ -1,17 +1,3 @@
-// Copyright 2019 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package com.google.codelab.currentplace;
 
 import androidx.annotation.NonNull;
@@ -29,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -51,22 +36,36 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
-import java.util.Arrays;
-import java.util.List;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.util.Log;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    public  static TextView data;
-
     // New variables for Current Place Picker
     private static final String TAG = "MapsActivity";
     private PlacesClient mPlacesClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private ListView lv;
+    public  static TextView data;
+    ArrayList<HashMap<String, Double>> roadApi;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -97,9 +96,46 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Places.initialize(getApplicationContext(), apiKey);
         mPlacesClient = Places.createClient(this);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        FetchData process = new FetchData();
-        //String teste = "";
-        //process.execute();
+        // Json
+        GetRoadApi process = new GetRoadApi();
+        process.execute();
+        data = (TextView)findViewById(R.id.placeId);
+    }
+
+    private class GetRoadApi extends AsyncTask<Void, Void, Void> {
+        String data;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Toast.makeText(MapsActivity.this, "Json Data is downloading", Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            try {
+                URL url = new URL("https://roads.googleapis.com/v1/nearestRoads?points=60.170880,24.942795|60.170879,24.942796|60.170877,24.942796&key=AIzaSyDjm1l8y0pnEPcBlKfetwuWJtNfINdrMxY");
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                InputStream inputStream = httpURLConnection.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                String line = "";
+                while (line != null) {
+                    line = bufferedReader.readLine();
+                    data = data + line;
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            MapsActivity.data.setText(this.data);
+        }
     }
 
     @Override
@@ -210,8 +246,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     new LatLng(mLastKnownLocation.getLatitude(),
                                             mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                            LatLng Currentloclatlongi = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
-                            mMap.addMarker(new MarkerOptions().position(Currentloclatlongi).title(mLastKnownLocation.getProvider()));
+                            LatLng CurrentLocLatLong = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
+                            mMap.addMarker(new MarkerOptions().position(CurrentLocLatLong).title("teste"));
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             mMap.moveCamera(CameraUpdateFactory
@@ -223,7 +259,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (Exception e) {
             Log.e("Exception: %s", e.getMessage());
         }
+
     }
+
     private void pickCurrentPlace() {
         if (mMap == null) {
             return;
