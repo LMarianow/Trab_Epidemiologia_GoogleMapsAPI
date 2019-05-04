@@ -63,9 +63,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final String TAG = "MapsActivity";
     private PlacesClient mPlacesClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
-    private ListView lv;
     public  static TextView data;
-    ArrayList<HashMap<String, Double>> roadApi;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -97,45 +95,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mPlacesClient = Places.createClient(this);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         // Json
-        GetRoadApi process = new GetRoadApi();
-        process.execute();
         data = (TextView)findViewById(R.id.placeId);
-    }
 
-    private class GetRoadApi extends AsyncTask<Void, Void, Void> {
-        String data;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Toast.makeText(MapsActivity.this, "Json Data is downloading", Toast.LENGTH_LONG).show();
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            try {
-                URL url = new URL("https://roads.googleapis.com/v1/nearestRoads?points=60.170880,24.942795|60.170879,24.942796|60.170877,24.942796&key=AIzaSyDjm1l8y0pnEPcBlKfetwuWJtNfINdrMxY");
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                InputStream inputStream = httpURLConnection.getInputStream();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                String line = "";
-                while (line != null) {
-                    line = bufferedReader.readLine();
-                    data = data + line;
-                }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-            MapsActivity.data.setText(this.data);
-        }
     }
 
     @Override
@@ -247,6 +208,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     new LatLng(mLastKnownLocation.getLatitude(),
                                             mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                             LatLng CurrentLocLatLong = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
+                            GetRoadApi process = new GetRoadApi();
+                            process.execute(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude());
                             mMap.addMarker(new MarkerOptions().position(CurrentLocLatLong).title("teste"));
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
@@ -281,6 +244,42 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             // Prompt the user for permission.
             getLocationPermission();
+        }
+    }
+
+    public class GetRoadApi extends AsyncTask<Double, Double, Void> {
+        String data;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Toast.makeText(MapsActivity.this, "Json Data is downloading", Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        protected Void doInBackground(Double... arg0) {
+            try {
+                URL url = new URL("https://roads.googleapis.com/v1/nearestRoads?points="+mLastKnownLocation.getLatitude()+","+mLastKnownLocation.getLongitude()+"|"+mLastKnownLocation.getLatitude()+","+mLastKnownLocation.getLongitude()+"|"+mLastKnownLocation.getLatitude()+","+mLastKnownLocation.getLongitude()+"&key=AIzaSyDjm1l8y0pnEPcBlKfetwuWJtNfINdrMxY");
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                InputStream inputStream = httpURLConnection.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                String line = "";
+                while (line != null) {
+                    line = bufferedReader.readLine();
+                    data = data + line;
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            MapsActivity.data.setText(this.data);
         }
     }
 }

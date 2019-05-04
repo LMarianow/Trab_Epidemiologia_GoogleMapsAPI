@@ -40,13 +40,13 @@
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="515dp"
+            android:layout_height="420dp"
             tools:context=".MapsActivity" />
 
         <TextView
             android:id="@+id/placeId"
             android:layout_width="fill_parent"
-            android:layout_height="159dp"
+            android:layout_height="254dp"
             android:paddingBottom="2dip"
             android:textColor="@color/colorAccent" />
 
