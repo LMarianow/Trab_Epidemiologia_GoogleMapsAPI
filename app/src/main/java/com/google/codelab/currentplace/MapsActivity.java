@@ -248,7 +248,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public class GetRoadApi extends AsyncTask<Double, Double, Void> {
-        String data;
+        String data,data2,data3;
 
         @Override
         protected void onPreExecute() {
@@ -273,12 +273,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 data = data.substring(18
                         ,tam-1);
                 Log.d(TAG, "TESTE: " + data);
-                /*while (line != null) {
-                    line = bufferedReader.readLine();
-                    data = data + line;
-                    //if (data.substring(0,10)=="placeId=")
-                    //    break;
-                }*/
+                URL url2 = new URL("https://maps.googleapis.com/maps/api/place/details/json?placeid="+data+"&key=AIzaSyDjm1l8y0pnEPcBlKfetwuWJtNfINdrMxY");
+                HttpURLConnection httpURLConnection2 = (HttpURLConnection) url2.openConnection();
+                InputStream inputStream2 = httpURLConnection2.getInputStream();
+                BufferedReader bufferedReader2 = new BufferedReader(new InputStreamReader(inputStream2));
+                String line2 = "";
+                for(int i=0;i<=5;i++)
+                {
+                    line2 = bufferedReader2.readLine();
+                    data2 = line2;
+                }
+                int tam2 = data2.length();
+                if (data2.charAt(27) == 'B' && data2.charAt(28) == 'R') {
+                    if(data2.charAt(29) =='-' && data2.charAt(30) == '0'){
+                        data2 = data2.substring(31,tam2-2);
+                    }else{
+                        data2 = data2.substring(30,tam2-2);
+                    }
+                }
+                Log.d(TAG, "TESTE 2: " + data2);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -290,6 +303,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
+            //MapsActivity.data2.setText(this.data2);
             MapsActivity.data.setText(this.data);
         }
     }
