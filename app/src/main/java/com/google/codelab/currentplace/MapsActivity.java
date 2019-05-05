@@ -60,6 +60,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import android.content.Context;
+import java.nio.charset.Charset;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -71,7 +72,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public  static TextView data;
     private ArrayList<String[]> dados = new ArrayList<String[]>();
     Context contex2;
-
+    private String fileName = "datatran2019.csv";
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
@@ -300,7 +301,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                 Log.d(TAG, "TESTE 2: " + data2);
                 ReadSCV();
-                Log.d(TAG, "TESTE dads="+getData());
+                Log.d(TAG, "TESTE dads="+getData().get(1));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -319,14 +320,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void ReadSCV(){
         try {
-            InputStreamReader is = new InputStreamReader(getAssets()
-                    .open("datatran2019.csv"));
-            CSVReader reader = new CSVReader(is);
-            String[] nextLine;
+            InputStream is = getAssets()
+                    .open(fileName);
+            InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+            CSVReader reader = new CSVReader(isr,';');
+            String[] nextLine = null;
+            String Linha="";
             // start reading the scv files, remember the first row is the attribute
             while ((nextLine = reader.readNext()) != null) {
+                Linha = nextLine[0];
                 dados.add(nextLine);
             }
+            Log.d(TAG, "Linha2="+Linha);
             Log.d(TAG, "TESTE="+dados);
         }catch (Exception e) {
             Log.e( TAG, e.toString() );
