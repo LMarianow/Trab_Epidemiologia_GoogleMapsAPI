@@ -55,6 +55,11 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import com.opencsv.CSVReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import android.content.Context;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -64,6 +69,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PlacesClient mPlacesClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     public  static TextView data;
+    private ArrayList<String[]> dados = new ArrayList<String[]>();
+    Context contex2;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -292,6 +299,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 }
                 Log.d(TAG, "TESTE 2: " + data2);
+                ReadSCV();
+                Log.d(TAG, "TESTE dads="+getData());
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -307,4 +316,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             MapsActivity.data.setText(this.data);
         }
     }
+
+    private void ReadSCV(){
+        try {
+            InputStreamReader is = new InputStreamReader(getAssets()
+                    .open("datatran2019.csv"));
+            CSVReader reader = new CSVReader(is);
+            String[] nextLine;
+            // start reading the scv files, remember the first row is the attribute
+            while ((nextLine = reader.readNext()) != null) {
+                dados.add(nextLine);
+            }
+            Log.d(TAG, "TESTE="+dados);
+        }catch (Exception e) {
+            Log.e( TAG, e.toString() );
+        }
+    }
+
+    /**
+     * get arrayList of the scv file data
+     * @return: an arrayList of string[] of the data
+     */
+    public ArrayList<String[]> getData() {
+        return dados;
+    }
 }
+
+
