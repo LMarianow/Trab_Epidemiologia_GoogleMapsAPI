@@ -256,7 +256,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public class GetRoadApi extends AsyncTask<Double, Double, Void> {
-        String data,data2,data3;
+        String data,data2;
 
         @Override
         protected void onPreExecute() {
@@ -300,7 +300,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 }
                 Log.d(TAG, "TESTE 2: " + data2);
-                ReadSCV();
+                ReadSCV("50");
                 Log.d(TAG, "TESTE dads="+getData().get(1));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -318,8 +318,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void ReadSCV(){
+    private void ReadSCV(String BR){
         try {
+            int Data_Numbers[] = new int[2];
+
             InputStream is = getAssets()
                     .open(fileName);
             InputStreamReader isr = new InputStreamReader(is, "UTF-8");
@@ -328,11 +330,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             String Linha="";
             // start reading the scv files, remember the first row is the attribute
             while ((nextLine = reader.readNext()) != null) {
-                Linha = nextLine[0];
+                if( BR.compareTo(nextLine[5]) == 0) {
+                    Data_Numbers[0] = Data_Numbers[0] + Integer.valueOf(nextLine[18]);
+                    Data_Numbers[1] = Data_Numbers[1] + Integer.valueOf(nextLine[23]);
+                }
+                Linha = nextLine[5];
                 dados.add(nextLine);
             }
             Log.d(TAG, "Linha2="+Linha);
-            Log.d(TAG, "TESTE="+dados);
+            Log.d(TAG, "Nmortos =" + Data_Numbers[0] + " Nferidos =" + Data_Numbers[1]);
         }catch (Exception e) {
             Log.e( TAG, e.toString() );
         }
