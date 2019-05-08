@@ -67,11 +67,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     // New variables for Current Place Picker
     private static final String TAG = "MapsActivity";
-    private PlacesClient mPlacesClient;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     public  static TextView data;
     private ArrayList<String[]> dados = new ArrayList<String[]>();
-    Context contex2;
     private String fileName = "datatran2019.csv";
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -100,7 +98,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Initialize the Places client
         String apiKey = getString(R.string.google_maps_key);
         Places.initialize(getApplicationContext(), apiKey);
-        mPlacesClient = Places.createClient(this);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         // Json
         data = (TextView)findViewById(R.id.placeId);
@@ -299,8 +296,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         data2 = data2.substring(30,tam2-2);
                     }
                 }
-                Log.d(TAG, "TESTE 2: " + data2);
-                ReadSCV("50");
+                data = ReadSCV("20");
                 Log.d(TAG, "TESTE dads="+getData().get(1));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -308,7 +304,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 e.printStackTrace();
             }
             return null;
-        }
+    }
 
         @Override
         protected void onPostExecute(Void result) {
@@ -318,7 +314,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void ReadSCV(String BR){
+    private String ReadSCV(String BR){
         try {
             int Data_Numbers[] = new int[2];
 
@@ -339,9 +335,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             Log.d(TAG, "Linha2="+Linha);
             Log.d(TAG, "Nmortos =" + Data_Numbers[0] + " Nferidos =" + Data_Numbers[1]);
+            return "Nmortos: "+Data_Numbers[0]+" Nferidos: "+Data_Numbers[1];
         }catch (Exception e) {
             Log.e( TAG, e.toString() );
         }
+        return null;
     }
 
     /**
