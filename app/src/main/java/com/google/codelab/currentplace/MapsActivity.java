@@ -85,6 +85,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean mLocationPermissionGranted;
 
     private EditText buscador;
+    String LAT,LOG;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +99,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                           buscador = (EditText) findViewById(R.id.buscador);
                                           MapsActivity.data.setText(ReadSCV(buscador.getText().toString()));
+                                          GetPlace process = new GetPlace();
+                                          process.execute(buscador.getText().toString(),"");
                                       }
                                   }
         );
@@ -325,6 +328,49 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    public class GetPlace extends AsyncTask<String,String, Void> {
+        String lugar;
+        protected Void doInBackground(String... arg0) {
+            try {
+                lugar = buscador.getText().toString();
+                if(lugar.length() <=2 ){
+                    lugar = "0"+ lugar;
+                } else if (lugar.length()>3 || lugar.charAt(0) < '0' || lugar.charAt(0) > '9'
+                || lugar.charAt(1) < '0' || lugar.charAt(1) > '9' || lugar.charAt(2) < '0' || lugar.charAt(2) > '9') {
+                    return null;
+                }
+                URL url3 = new URL("https://maps.googleapis.com/maps/api/place/textsearch/json?query=BR-"+lugar+"&key=AIzaSyDjm1l8y0pnEPcBlKfetwuWJtNfINdrMxY");
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url3.openConnection();
+                InputStream inputStream = httpURLConnection.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                String line = "";
+                for(int i=0;i<8;i++)
+                {
+                    line = bufferedReader.readLine();
+                    LAT = line;
+                }
+                line = bufferedReader.readLine();
+                LOG = line;
+                LAT = LAT.substring(24,LAT.length()-1);
+                LOG = LOG.substring(24,LOG.length());
+                Log.d(TAG, "lat: " + LAT);
+                Log.d(TAG, "lat: " + LOG);
+
+                //LatLng brasil = new LatLng(Float.valueOf(LAT), Float.valueOf(LOG));
+                //mMap.addMarker(new MarkerOptions().position(brasil).title("Marcador"));
+                //mMap.moveCamera(CameraUpdateFactory.newLatLng(brasil));
+
+                Log.d(TAG, "lat: " + Float.valueOf(LAT));
+                Log.d(TAG, "lat: " + Float.valueOf(LOG));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
     private String ReadSCV(String BR){
         try {
             if(BR.length()<=3){
@@ -352,7 +398,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d(TAG, "Mortos =" + Data_Numbers[0] + "    Feridos =" + Data_Numbers[1]);
                 return "Nmortos: "+Data_Numbers[0]+" Nferidos: "+Data_Numbers[1];
             } else {
-                return "Nome inválido no maximo 3 números";
+                return "Rodovia não encontrada";
             }
 
 
