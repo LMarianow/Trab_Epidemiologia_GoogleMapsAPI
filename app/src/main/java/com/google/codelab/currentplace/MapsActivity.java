@@ -39,6 +39,8 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -82,10 +84,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
+    private EditText buscador;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        Button search = (Button) findViewById(R.id.search);
+        search.setOnClickListener(new View.OnClickListener() {
+                                      @Override
+                                      public void onClick(View view) {
+
+                                          buscador = (EditText) findViewById(R.id.buscador);
+                                          MapsActivity.data.setText(ReadSCV(buscador.getText().toString()));
+                                      }
+                                  }
+        );
+
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -101,7 +119,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         // Json
         data = (TextView)findViewById(R.id.placeId);
-
     }
 
     @Override
@@ -117,6 +134,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.action_geolocate:
                 pickCurrentPlace();
                 return true;
+
 
             default:
                 // If we got here, the user's action was not recognized.
@@ -140,7 +158,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Add a marker in Sydney and move the camera
         LatLng brasil = new LatLng(-10.8134108, -47.9394216);
-        mMap.addMarker(new MarkerOptions().position(brasil).title("Marcador em Brasil"));
+        mMap.addMarker(new MarkerOptions().position(brasil).title("Marcador"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(brasil));
 
         // Enable the zoom controls for the map
@@ -215,7 +233,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             LatLng CurrentLocLatLong = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
                             GetRoadApi process = new GetRoadApi();
                             process.execute(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude());
-                            mMap.addMarker(new MarkerOptions().position(CurrentLocLatLong).title("teste"));
+                            mMap.addMarker(new MarkerOptions().position(CurrentLocLatLong).title("local"));
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             mMap.moveCamera(CameraUpdateFactory
@@ -256,12 +274,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String data,data2;
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Toast.makeText(MapsActivity.this, "Json Data is downloading", Toast.LENGTH_LONG).show();
-        }
-
-        @Override
         protected Void doInBackground(Double... arg0) {
             try {
                 URL url = new URL("https://roads.googleapis.com/v1/nearestRoads?points="+mLastKnownLocation.getLatitude()+","+mLastKnownLocation.getLongitude()+"&key=AIzaSyDjm1l8y0pnEPcBlKfetwuWJtNfINdrMxY");
@@ -296,8 +308,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         data2 = data2.substring(30,tam2-2);
                     }
                 }
-                data = ReadSCV("20");
-                Log.d(TAG, "TESTE dads="+getData().get(1));
+                data = ReadSCV(data2);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -316,38 +327,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private String ReadSCV(String BR){
         try {
-            int Data_Numbers[] = new int[2];
+            if(BR.length()<=3){
+                int Data_Numbers[] = new int[2];
 
-            InputStream is = getAssets()
-                    .open(fileName);
-            InputStreamReader isr = new InputStreamReader(is, "UTF-8");
-            CSVReader reader = new CSVReader(isr,';');
-            String[] nextLine = null;
-            String Linha="";
-            // start reading the scv files, remember the first row is the attribute
-            while ((nextLine = reader.readNext()) != null) {
-                if( BR.compareTo(nextLine[5]) == 0) {
-                    Data_Numbers[0] = Data_Numbers[0] + Integer.valueOf(nextLine[18]);
-                    Data_Numbers[1] = Data_Numbers[1] + Integer.valueOf(nextLine[23]);
+                InputStream is = getAssets()
+                        .open(fileName);
+                InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+                CSVReader reader = new CSVReader(isr,';');
+                String[] nextLine = null;
+                String Linha="";
+                // start reading the scv files, remember the first row is the attribute
+                if(BR.charAt(0) == '0') {
+                    BR = BR.substring(1,3);
                 }
-                Linha = nextLine[5];
-                dados.add(nextLine);
+                while ((nextLine = reader.readNext()) != null) {
+                    if( BR.compareTo(nextLine[5]) == 0) {
+                        Data_Numbers[0] = Data_Numbers[0] + Integer.valueOf(nextLine[18]);
+                        Data_Numbers[1] = Data_Numbers[1] + Integer.valueOf(nextLine[23]);
+                    }
+                    Linha = nextLine[5];
+                    dados.add(nextLine);
+                }
+                Log.d(TAG, "Linha2="+Linha);
+                Log.d(TAG, "Mortos =" + Data_Numbers[0] + "    Feridos =" + Data_Numbers[1]);
+                return "Nmortos: "+Data_Numbers[0]+" Nferidos: "+Data_Numbers[1];
+            } else {
+                return "Nome inválido no maximo 3 números";
             }
-            Log.d(TAG, "Linha2="+Linha);
-            Log.d(TAG, "Nmortos =" + Data_Numbers[0] + " Nferidos =" + Data_Numbers[1]);
-            return "Nmortos: "+Data_Numbers[0]+" Nferidos: "+Data_Numbers[1];
+
+
         }catch (Exception e) {
             Log.e( TAG, e.toString() );
         }
         return null;
-    }
-
-    /**
-     * get arrayList of the scv file data
-     * @return: an arrayList of string[] of the data
-     */
-    public ArrayList<String[]> getData() {
-        return dados;
     }
 }
 

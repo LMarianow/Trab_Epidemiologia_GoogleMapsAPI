@@ -22,34 +22,80 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:minHeight="?attr/actionBarSize"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:titleTextColor="@android:color/white"
-        android:background="@color/colorPrimary">
-    </androidx.appcompat.widget.Toolbar>
+        android:layout_height="51dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="106dp"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="151dp"
+            android:layout_height="match_parent"
+            app:srcCompat="@mipmap/logo" />
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#303030"
+            android:minHeight="?attr/actionBarSize"
+            android:textAlignment="center"
+            android:visibility="visible"
+            app:title=" "
+            app:titleTextColor="@android:color/white"></androidx.appcompat.widget.Toolbar>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="10dp"
         android:orientation="vertical">
 
-        <fragment
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="420dp"
-            tools:context=".MapsActivity" />
-
-        <TextView
-            android:id="@+id/placeId"
-            android:layout_width="fill_parent"
-            android:layout_height="254dp"
-            android:paddingBottom="2dip"
-            android:textColor="@color/colorAccent" />
-
     </LinearLayout>
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="376dp"
+        tools:context=".MapsActivity" />
+
+    <TextView
+        android:id="@+id/placeId"
+        android:layout_width="fill_parent"
+        android:layout_height="66dp"
+        android:paddingBottom="2dip"
+        android:textColor="@color/colorPrimary"
+        android:textSize="30sp" />
+
+    <EditText
+        android:id="@+id/buscador"
+        android:layout_width="match_parent"
+        android:layout_height="53dp"
+        android:background="@color/colorPrimary"
+        android:ems="10"
+        android:hint=' Encontrar Rodovia "110"'
+        android:inputType="textPersonName"
+        android:textColor="@color/colorAccent"
+        android:textColorHint="@color/colorAccent"
+        android:textSize="30sp" />
+
+    <Button
+        android:id="@+id/search"
+        android:layout_width="match_parent"
+        android:layout_height="61dp"
+        android:background="@color/colorAccent"
+        android:text="@string/places_autocomplete_search_hint"
+        android:textColor="@color/colorPrimary"
+        android:textSize="24sp" />
+
+
 
 </LinearLayout>
